@@ -1,8 +1,14 @@
 import argparse
+
 from utils.helpers import resolve_target
 from core.ports import scan_ports
+from core.services import detect_services
+
 
 def main():
+    # -------------------------------
+    # Argument Parsing
+    # -------------------------------
     parser = argparse.ArgumentParser(
         description="VulnHawk - Modular Vulnerability Scanner"
     )
@@ -15,6 +21,9 @@ def main():
 
     args = parser.parse_args()
 
+    # -------------------------------
+    # Target Resolution
+    # -------------------------------
     ip = resolve_target(args.target)
 
     if not ip:
@@ -23,12 +32,28 @@ def main():
 
     print(f"[+] Target resolved: {args.target} -> {ip}")
 
+    # -------------------------------
+    # Port Scanning
+    # -------------------------------
     open_ports = scan_ports(ip)
 
     if not open_ports:
         print("[-] No open ports found")
-    else:
-        print(f"[+] Open ports discovered: {open_ports}")
+        return
+
+    print(f"[+] Open ports discovered: {open_ports}")
+
+    # -------------------------------
+    # Service & Banner Detection
+    # -------------------------------
+    services = detect_services(ip, open_ports)
+
+    print("\n[+] Service Detection Results:")
+    for port, banner in services.items():
+        # Safe banner output (avoid crashes)
+        first_line = banner.splitlines()[0] if banner else "Unknown"
+        print(f"Port {port} -> {first_line}")
+
 
 if __name__ == "__main__":
     main()
