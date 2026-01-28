@@ -5,6 +5,7 @@ from core.ports import scan_ports
 from core.services import detect_services
 from web.headers import check_security_headers
 from web.files import scan_sensitive_files
+from reports.reporter import generate_report
 
 
 def main():
@@ -83,6 +84,18 @@ def main():
         print("[!] Sensitive paths discovered:")
         for path, status in sensitive_findings.items():
             print(f" - /{path} (HTTP {status})")
+
+    # ----------------------------------
+    # Report Generation
+    # ----------------------------------
+    generate_report(
+        target=args.target,
+        ip=ip,
+        open_ports=open_ports,
+        services=services,
+        headers=header_issues,
+        sensitive_files=sensitive_findings
+    )
 
 
 if __name__ == "__main__":
