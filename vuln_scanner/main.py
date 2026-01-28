@@ -3,6 +3,7 @@ import argparse
 from utils.helpers import resolve_target
 from core.ports import scan_ports
 from core.services import detect_services
+from web.headers import check_security_headers
 
 
 def main():
@@ -50,9 +51,23 @@ def main():
 
     print("\n[+] Service Detection Results:")
     for port, banner in services.items():
-        # Safe banner output (avoid crashes)
         first_line = banner.splitlines()[0] if banner else "Unknown"
         print(f"Port {port} -> {first_line}")
+
+    # -------------------------------
+    # HTTP Security Header Scan
+    # -------------------------------
+    print("\n[*] Checking HTTP security headers...")
+
+    url = f"http://{args.target}"
+    header_issues = check_security_headers(url)
+
+    if not header_issues:
+        print("[+] All recommended security headers are present")
+    else:
+        print("[!] Missing / Weak Security Headers:")
+        for header, issue in header_issues.items():
+            print(f" - {header}: {issue}")
 
 
 if __name__ == "__main__":
